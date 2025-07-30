@@ -13,7 +13,19 @@ app.listen(PORT, () => {
 
 const { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes } = require('discord.js');
 
-// Pon tu TOKEN y tu CLIENT_ID reales:
+function obtenerFechaHoraLima() {
+    const fecha = new Date();
+    const opciones = { 
+        timeZone: 'America/Lima',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    return fecha.toLocaleString('es-PE', opciones).replace(',', ' •');
+}
+
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = '1399927083580264519';
 
@@ -170,7 +182,10 @@ client.on('interactionCreate', async interaction => {
         ultimoMonto = monto;
 
         let mensaje = tablaPrideBattle(equipoRojo, equipoAzul, monto, partidas);
-        await interaction.reply(mensaje);
+    let fechaHora = obtenerFechaHoraLima();
+    mensaje = `🗓️ **Jugada Realizada:** ${fechaHora}\n` + mensaje;
+        
+    await interaction.reply(mensaje);
     }
 
     // PAGOS
@@ -210,6 +225,9 @@ client.on('interactionCreate', async interaction => {
         msg += `🏆 Pagos tras la serie (${ultimoMonto} soles por jugador):\n\n`;
         msg += pagos.join('\n') + "\n";
         msg += "```";
+
+        let fechaHora = obtenerFechaHoraLima();
+        msg = `🗓️ **Pagos Realizados:** ${fechaHora}\n` + msg;
 
         await interaction.reply(msg);
     }
