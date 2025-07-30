@@ -1,3 +1,16 @@
+// --- EXPRESS KEEP-ALIVE PARA RENDER ---
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('¡Bot Discord activo! 😎');
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor Express escuchando en el puerto ${PORT}`);
+});
+
 const { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes } = require('discord.js');
 
 // Pon tu TOKEN y tu CLIENT_ID reales:
