@@ -89,11 +89,10 @@ function capitalizarNombre(nombre) {
 }
 
 // 5️⃣ Función para tabla alineada dinámicamente
-function tablaPrideBattle(equipoRojo, equipoAzul, monto, games) {
+function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = true) {
     const numIconos = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
     let maxJug = Math.max(equipoRojo.length, equipoAzul.length);
 
-    // Calcular ancho máximo de columna para nombres
     let maxRojo = Math.max(
         "EQUIPO ROJO  🔴".length, 
         "-----------".length,
@@ -109,27 +108,54 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games) {
     lines.push("─────────────────────────────────────────────");
     lines.push("        ⚔️  PRIDE BATTLE HK WRCI  ⚔️");
     lines.push("─────────────────────────────────────────────");
-    lines.push(
-        " " +
-        "EQUIPO ROJO  🔴".padEnd(maxRojo + 2) +
-        "VS".padStart(7).padEnd(7) +
-        "EQUIPO AZUL  🔵".padStart(maxAzul + 2)
-    );
-    lines.push(
-        " " +
-        "-----------".padEnd(maxRojo + 2) +
-        "".padStart(7) +
-        "-----------".padStart(maxAzul + 2)
-    );
+
+    // 👇 Aquí usas el parámetro rojoIzquierda
+    if (rojoIzquierda) {
+        lines.push(
+            " " +
+            "EQUIPO ROJO  🔴".padEnd(maxRojo + 2) +
+            "VS".padStart(7).padEnd(7) +
+            "EQUIPO AZUL  🔵".padStart(maxAzul + 2)
+        );
+        lines.push(
+            " " +
+            "-----------".padEnd(maxRojo + 2) +
+            "".padStart(7) +
+            "-----------".padStart(maxAzul + 2)
+        );
+    } else {
+        lines.push(
+            " " +
+            "EQUIPO AZUL  🔵".padEnd(maxAzul + 2) +
+            "VS".padStart(7).padEnd(7) +
+            "EQUIPO ROJO  🔴".padStart(maxRojo + 2)
+        );
+        lines.push(
+            " " +
+            "-----------".padEnd(maxAzul + 2) +
+            "".padStart(7) +
+            "-----------".padStart(maxRojo + 2)
+        );
+    }
+
     for(let i = 0; i < maxJug; i++) {
         let rojo = equipoRojo[i] ? `${numIconos[i]} ${equipoRojo[i]}` : "";
         let azul = equipoAzul[i] ? `${numIconos[i]} ${equipoAzul[i]}` : "";
-        lines.push(
-            " " +
-            rojo.padEnd(maxRojo + 2) +
-            "".padStart(7) +
-            azul.padStart(maxAzul + 2)
-        );
+        if (rojoIzquierda) {
+            lines.push(
+                " " +
+                rojo.padEnd(maxRojo + 2) +
+                "".padStart(7) +
+                azul.padStart(maxAzul + 2)
+            );
+        } else {
+            lines.push(
+                " " +
+                azul.padEnd(maxAzul + 2) +
+                "".padStart(7) +
+                rojo.padStart(maxRojo + 2)
+            );
+        }
     }
     lines.push("─────────────────────────────────────────────");
     lines.push(`💰  Apuesta: ${monto} soles/jugador`);
@@ -157,18 +183,31 @@ client.on('interactionCreate', async interaction => {
             listaJugadores = jugadoresStr.trim().split(/\s+/);
         }
 
-        // Capitaliza y mezcla aleatorio
-        listaJugadores = listaJugadores.map(capitalizarNombre).sort(() => Math.random() - 0.5);
-        let mitad = Math.ceil(listaJugadores.length / 2);
-        let equipoRojo = listaJugadores.slice(0, mitad);
-        let equipoAzul = listaJugadores.slice(mitad);
+       // Capitaliza y mezcla aleatoriamente
+listaJugadores = listaJugadores.map(capitalizarNombre).sort(() => Math.random() - 0.5);
+
+let mitad = Math.ceil(listaJugadores.length / 2);
+let equipoA = listaJugadores.slice(0, mitad);
+let equipoB = listaJugadores.slice(mitad);
+
+// Asigna el color de los equipos de forma aleatoria
+let equipoRojo, equipoAzul, rojoIzquierda;
+if (Math.random() < 0.5) {
+    equipoRojo = equipoA;
+    equipoAzul = equipoB;
+    rojoIzquierda = true;
+} else {
+    equipoRojo = equipoB;
+    equipoAzul = equipoA;
+    rojoIzquierda = false;
+}
 
         // Guarda para pagos
         ultimoEquipoRojo = equipoRojo;
         ultimoEquipoAzul = equipoAzul;
         ultimoMonto = monto;
 
-        let mensaje = tablaPrideBattle(equipoRojo, equipoAzul, monto, partidas);
+        let mensaje = tablaPrideBattle(equipoRojo, equipoAzul, monto, partidas,rojoIzquierda);
     await interaction.reply(mensaje);
     }
 
