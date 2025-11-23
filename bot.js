@@ -106,7 +106,7 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
 
     let lines = [];
     lines.push("─────────────────────────────────────────────");
-    lines.push("        ⚔️  PRIDE BATTLE HK WRCI  ⚔️");
+    lines.push("    ⚔️  PRIDE BATTLE HK-WRCI/HS-LOBO  ⚔️    ");
     lines.push("─────────────────────────────────────────────");
 
     // 👇 Aquí usas el parámetro rojoIzquierda
