@@ -164,7 +164,7 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
     lines.push(`🎮  Games: ${games}`);
     lines.push("🔥 ¡LUCHAR! 🔥");
 
-    return "```\\n" + lines.join('\\n') + "\\n```";
+    return "```\n" + lines.join('\n') + "\n```";
 }
 
 // 6️⃣ Listener de comandos
@@ -253,7 +253,7 @@ if (ganador === 'rojo') {
 
         let msg = "```\\n";
         msg += `💰 Resultados de pagos (${data.monto} soles por jugador):\\n\\n`;
-        msg += pagos.join('\\n') + "\\n";
+        msg += pagos.join('\n') + "\n";
         msg += "```";
 
         await interaction.reply(msg);
