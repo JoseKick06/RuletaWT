@@ -15,7 +15,17 @@ app.listen(PORT, () => {
   console.log(`Servidor Express escuchando en el puerto ${PORT}`);
 });
 
-const { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes } = require('discord.js');
+const {
+  Client,
+  GatewayIntentBits,
+  SlashCommandBuilder,
+  REST,
+  Routes,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} = require('discord.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = '1399927083580264519';
@@ -44,6 +54,7 @@ const commands = [
                 .setRequired(true)
         )
         .toJSON(),
+
     new SlashCommandBuilder()
         .setName('pagoswt')
         .setDescription('Calcula los pagos según el equipo ganador')
@@ -56,6 +67,11 @@ const commands = [
                     { name: 'Rojo', value: 'rojo' }
                 )
         )
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('helpwt')
+        .setDescription('Muestra cómo usar el bot')
         .toJSON()
 ];
 
@@ -90,87 +106,169 @@ function capitalizarNombre(nombre) {
         .join(' ');
 }
 
-// 5️⃣ Función para tabla alineada dinámicamente
-function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = true) {
-    const numIconos = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
-    let maxJug = Math.max(equipoRojo.length, equipoAzul.length);
-
-    let maxRojo = Math.max(
-        "EQUIPO ROJO  🔴".length, 
-        "-----------".length,
-        ...equipoRojo.map((n, i) => (`${numIconos[i]} ${n}`).length)
-    );
-    let maxAzul = Math.max(
-        "EQUIPO AZUL  🔵".length,
-        "-----------".length,
-        ...equipoAzul.map((n, i) => (`${numIconos[i]} ${n}`).length)
-    );
-
-    let lines = [];
-    lines.push("─────────────────────────────────────────────");
-    lines.push("    ⚔️  PRIDE BATTLE HK-WRCI/HS-LOBO  ⚔️    ");
-    lines.push("─────────────────────────────────────────────");
-
-    // 👇 Aquí usas el parámetro rojoIzquierda
-    if (rojoIzquierda) {
-        lines.push(
-            " " +
-            "EQUIPO ROJO  🔴".padEnd(maxRojo + 2) +
-            "VS".padStart(7).padEnd(7) +
-            "EQUIPO AZUL  🔵".padStart(maxAzul + 2)
-        );
-        lines.push(
-            " " +
-            "-----------".padEnd(maxRojo + 2) +
-            "".padStart(7) +
-            "-----------".padStart(maxAzul + 2)
-        );
-    } else {
-        lines.push(
-            " " +
-            "EQUIPO AZUL  🔵".padEnd(maxAzul + 2) +
-            "VS".padStart(7).padEnd(7) +
-            "EQUIPO ROJO  🔴".padStart(maxRojo + 2)
-        );
-        lines.push(
-            " " +
-            "-----------".padEnd(maxAzul + 2) +
-            "".padStart(7) +
-            "-----------".padStart(maxRojo + 2)
-        );
-    }
-
-    for(let i = 0; i < maxJug; i++) {
-        let rojo = equipoRojo[i] ? `${numIconos[i]} ${equipoRojo[i]}` : "";
-        let azul = equipoAzul[i] ? `${numIconos[i]} ${equipoAzul[i]}` : "";
-        if (rojoIzquierda) {
-            lines.push(
-                " " +
-                rojo.padEnd(maxRojo + 2) +
-                "".padStart(7) +
-                azul.padStart(maxAzul + 2)
-            );
-        } else {
-            lines.push(
-                " " +
-                azul.padEnd(maxAzul + 2) +
-                "".padStart(7) +
-                rojo.padStart(maxRojo + 2)
-            );
-        }
-    }
-    lines.push("─────────────────────────────────────────────");
-    lines.push(`💰  Apuesta: ${monto} soles/jugador`);
-    lines.push(`🎮  Games: ${games}`);
-    lines.push("🔥 ¡LUCHAR! 🔥");
-
-    return "```\n" + lines.join('\n') + "\n```";
-}
-
 // 6️⃣ Listener de comandos
 client.on('interactionCreate', async interaction => {
+    if (interaction.isButton()) {
+        const data = ultimasRuletas.get(interaction.guildId);
+
+        if (!data) {
+            await interaction.reply({ content: '❌ No hay una ruleta guardada en este servidor.', ephemeral: true });
+            return;
+        }
+
+        if (interaction.customId === 'repetir_ruleta') {
+            let listaJugadores = [...data.listaJugadores].sort(() => Math.random() - 0.5);
+
+            let mitad = Math.ceil(listaJugadores.length / 2);
+            let equipoA = listaJugadores.slice(0, mitad);
+            let equipoB = listaJugadores.slice(mitad);
+
+            let equipoRojo, equipoAzul, rojoIzquierda;
+            if (Math.random() < 0.5) {
+                equipoRojo = equipoA;
+                equipoAzul = equipoB;
+                rojoIzquierda = true;
+            } else {
+                equipoRojo = equipoB;
+                equipoAzul = equipoA;
+                rojoIzquierda = false;
+            }
+
+            ultimasRuletas.set(interaction.guildId, {
+                equipoRojo,
+                equipoAzul,
+                monto: data.monto,
+                partidas: data.partidas,
+                listaJugadores
+            });
+
+            const embed = new EmbedBuilder()
+                .setColor(rojoIzquierda ? 0xff3b3b : 0x3b82f6)
+                .setTitle('🔄 Ruleta WT Repetida')
+                .setDescription(`⚔️ Combate listo entre ${equipoRojo.length} vs ${equipoAzul.length} jugadores`)
+                .addFields(
+                    {
+                        name: '🔴 Equipo Rojo',
+                        value: equipoRojo.length ? equipoRojo.map((j, i) => `${i + 1}. ${j}`).join('\\n') : 'Sin jugadores',
+                        inline: true
+                    },
+                    {
+                        name: '🔵 Equipo Azul',
+                        value: equipoAzul.length ? equipoAzul.map((j, i) => `${i + 1}. ${j}`).join('\\n') : 'Sin jugadores',
+                        inline: true
+                    },
+                    {
+                        name: '💰 Apuesta',
+                        value: `${data.monto} soles por jugador`,
+                        inline: true
+                    },
+                    {
+                        name: '🎮 Games',
+                        value: `${data.partidas}`,
+                        inline: true
+                    }
+                )
+                .setFooter({ text: `Solicitado por ${interaction.user.tag}` })
+                .setTimestamp();
+
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('repetir_ruleta')
+                        .setLabel('🔄 Repetir ruleta')
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('pagos_rojo')
+                        .setLabel('💸 Pagos rojo')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId('pagos_azul')
+                        .setLabel('💸 Pagos azul')
+                        .setStyle(ButtonStyle.Primary)
+                );
+
+            await interaction.reply({ embeds: [embed], components: [row] });
+            return;
+        }
+
+        const ganador = interaction.customId === 'pagos_rojo' ? 'rojo' : 'azul';
+        let equipoGanador, equipoPerdedor;
+
+        if (ganador === 'rojo') {
+            equipoGanador = data.equipoRojo;
+            equipoPerdedor = data.equipoAzul;
+        } else {
+            equipoGanador = data.equipoAzul;
+            equipoPerdedor = data.equipoRojo;
+        }
+
+        let ganadoresAleatorio = equipoGanador.slice().sort(() => Math.random() - 0.5);
+        let pagos = [];
+        let min = Math.min(equipoPerdedor.length, ganadoresAleatorio.length);
+
+        for (let i = 0; i < min; i++) {
+            pagos.push(`• ${equipoPerdedor[i]} paga ${data.monto} soles a ${ganadoresAleatorio[i]}`);
+        }
+        if (equipoPerdedor.length > ganadoresAleatorio.length) {
+            for (let j = ganadoresAleatorio.length; j < equipoPerdedor.length; j++) {
+                pagos.push(`• ${equipoPerdedor[j]} no paga (sin pareja)`);
+            }
+        }
+        if (ganadoresAleatorio.length > equipoPerdedor.length) {
+            for (let j = equipoPerdedor.length; j < ganadoresAleatorio.length; j++) {
+                pagos.push(`• ${ganadoresAleatorio[j]} no recibe pago (sin pareja)`);
+            }
+        }
+
+        const embedPagos = new EmbedBuilder()
+            .setColor(ganador === 'rojo' ? 0xff3b3b : 0x3b82f6)
+            .setTitle('💸 Resultados de Pagos')
+            .setDescription(`Ganador: **${ganador === 'rojo' ? 'Rojo 🔴' : 'Azul 🔵'}**`)
+            .addFields(
+                {
+                    name: 'Pagos',
+                    value: pagos.length ? pagos.join('\\n') : 'Sin pagos',
+                    inline: false
+                }
+            )
+            .setFooter({ text: `Solicitado por ${interaction.user.tag}` })
+            .setTimestamp();
+
+        await interaction.reply({ embeds: [embedPagos], ephemeral: true });
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
+if (interaction.commandName === 'helpwt') {
+    const helpEmbed = new EmbedBuilder()
+        .setColor(0x5865f2)
+        .setTitle('📘 Ayuda de Ruleta WT')
+        .setDescription('Estos son los comandos disponibles del bot.')
+        .addFields(
+            {
+                name: '/ruletawt',
+                value: 'Genera equipos aleatorios.\nEjemplo: `Juan, Pedro, Luis, Carlos`',
+                inline: false
+            },
+            {
+                name: '/pagoswt',
+                value: 'Calcula pagos según el equipo ganador: rojo o azul.',
+                inline: false
+            },
+            {
+                name: 'Botones',
+                value: 'Puedes repetir la ruleta o sacar pagos rojo/azul con un clic.',
+                inline: false
+            }
+        )
+        .setFooter({ text: `Solicitado por ${interaction.user.tag}` })
+        .setTimestamp();
+
+    await interaction.reply({ embeds: [helpEmbed], ephemeral: true });
+    return;
+}
+  
     // RULETA
     if (interaction.commandName === 'ruletawt') {
         const jugadoresStr = interaction.options.getString('jugadores');
@@ -184,6 +282,11 @@ client.on('interactionCreate', async interaction => {
         } else {
             listaJugadores = jugadoresStr.trim().split(/\s+/);
         }
+
+      if (listaJugadores.length < 2) {
+    await interaction.reply('❌ Debes ingresar al menos 2 jugadores.');
+    return;
+}
 
        // Capitaliza y mezcla aleatoriamente
 listaJugadores = listaJugadores.map(capitalizarNombre).sort(() => Math.random() - 0.5);
@@ -206,17 +309,63 @@ if (Math.random() < 0.5) {
 
         // Guarda para pagos por servidor
         ultimasRuletas.set(interaction.guildId, {
-            equipoRojo,
-            equipoAzul,
-            monto
-        });
+    equipoRojo,
+    equipoAzul,
+    monto,
+    partidas,
+    listaJugadores
+});
 
-        let mensaje = tablaPrideBattle(equipoRojo, equipoAzul, monto, partidas,rojoIzquierda);
-    await interaction.reply(mensaje);
-    }
+        const embed = new EmbedBuilder()
+    .setColor(rojoIzquierda ? 0xff3b3b : 0x3b82f6)
+    .setTitle('⚔️ Ruleta WT')
+    .setDescription(`⚔️ Combate listo entre ${equipoRojo.length} vs ${equipoAzul.length} jugadores`)
+    .addFields(
+        {
+            name: '🔴 Equipo Rojo',
+            value: equipoRojo.length ? equipoRojo.map((j, i) => `${i + 1}. ${j}`).join('\n') : 'Sin jugadores',
+            inline: true
+        },
+        {
+            name: '🔵 Equipo Azul',
+            value: equipoAzul.length ? equipoAzul.map((j, i) => `${i + 1}. ${j}`).join('\n') : 'Sin jugadores',
+            inline: true
+        },
+        {
+            name: '💰 Apuesta',
+            value: `${monto} soles por jugador`,
+            inline: true
+        },
+        {
+            name: '🎮 Games',
+            value: `${partidas}`,
+            inline: true
+        }
+    )
+    .setFooter({ text: `Solicitado por ${interaction.user.tag}` })
+    .setTimestamp();
 
-    // PAGOS
-    if (interaction.commandName === 'pagoswt') {
+      const row = new ActionRowBuilder()
+    .addComponents(
+        new ButtonBuilder()
+            .setCustomId('repetir_ruleta')
+            .setLabel('🔄 Repetir ruleta')
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('pagos_rojo')
+            .setLabel('💸 Pagos rojo')
+            .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+            .setCustomId('pagos_azul')
+            .setLabel('💸 Pagos azul')
+            .setStyle(ButtonStyle.Primary)
+    );
+
+    await interaction.reply({ embeds: [embed], components: [row] });
+    return;
+}
+
+if (interaction.commandName === 'pagoswt') {
       const ganador = interaction.options.getString('ganador');
       const data = ultimasRuletas.get(interaction.guildId);
 
@@ -234,29 +383,39 @@ if (ganador === 'rojo') {
     equipoPerdedor = data.equipoRojo;
 }
         let ganadoresAleatorio = equipoGanador.slice().sort(() => Math.random() - 0.5);
-        let pagos = [];
-        let min = Math.min(equipoPerdedor.length, ganadoresAleatorio.length);
+let pagos = [];
+let min = Math.min(equipoPerdedor.length, ganadoresAleatorio.length);
 
-        for (let i = 0; i < min; i++) {
-            pagos.push(`- ${equipoPerdedor[i]} paga ${data.monto} soles a ${ganadoresAleatorio[i]}`);
-        }
-        if (equipoPerdedor.length > ganadoresAleatorio.length) {
-            for (let j = ganadoresAleatorio.length; j < equipoPerdedor.length; j++) {
-                pagos.push(`- ${equipoPerdedor[j]} no paga (sin pareja)`);
-            }
-        }
-        if (ganadoresAleatorio.length > equipoPerdedor.length) {
-            for (let j = equipoPerdedor.length; j < ganadoresAleatorio.length; j++) {
-                pagos.push(`- ${ganadoresAleatorio[j]} no recibe pago (sin pareja)`);
-            }
-        }
+for (let i = 0; i < min; i++) {
+    pagos.push(`• ${equipoPerdedor[i]} paga ${data.monto} soles a ${ganadoresAleatorio[i]}`);
+}
+if (equipoPerdedor.length > ganadoresAleatorio.length) {
+    for (let j = ganadoresAleatorio.length; j < equipoPerdedor.length; j++) {
+        pagos.push(`• ${equipoPerdedor[j]} no paga (sin pareja)`);
+    }
+}
+if (ganadoresAleatorio.length > equipoPerdedor.length) {
+    for (let j = equipoPerdedor.length; j < ganadoresAleatorio.length; j++) {
+        pagos.push(`• ${ganadoresAleatorio[j]} no recibe pago (sin pareja)`);
+    }
+}
 
-        let msg = "```\n";
-        msg += `💰 Resultados de pagos (${data.monto} soles por jugador):\n\n`;
-        msg += pagos.join('\n') + "\n";
-        msg += "```";
+const embedPagos = new EmbedBuilder()
+    .setColor(ganador === 'rojo' ? 0xff3b3b : 0x3b82f6)
+    .setTitle('💸 Resultados de Pagos')
+    .setDescription(`Ganador: **${ganador === 'rojo' ? 'Rojo 🔴' : 'Azul 🔵'}**`)
+    .addFields(
+        {
+            name: 'Pagos',
+            value: pagos.length ? pagos.join('\n') : 'Sin pagos',
+            inline: false
+        }
+    )
+    .setFooter({ text: `Solicitado por ${interaction.user.tag}` })
+    .setTimestamp();
 
-        await interaction.reply(msg);
+        await interaction.reply({ embeds: [embedPagos] });
+        return;
     }
 });
 
