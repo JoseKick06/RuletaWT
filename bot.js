@@ -7,6 +7,10 @@ app.get('/', (req, res) => {
   res.send('¡Bot Discord activo! 😎');
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor Express escuchando en el puerto ${PORT}`);
 });
