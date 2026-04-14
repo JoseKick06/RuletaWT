@@ -164,7 +164,7 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
     lines.push(`🎮  Games: ${games}`);
     lines.push("🔥 ¡LUCHAR! 🔥");
 
-    return "```\\n" + lines.join('\\n') + "\\n```";
+    return "```\n" + lines.join('\n') + "\n```";
 }
 
 // 6️⃣ Listener de comandos
@@ -180,9 +180,9 @@ client.on('interactionCreate', async interaction => {
         // Parsing inteligente: acepta comas o solo espacios
         let listaJugadores;
         if (jugadoresStr.includes(',')) {
-            listaJugadores = jugadoresStr.split(',').flatMap(j => j.trim().split(/\\s+/)).filter(Boolean);
+            listaJugadores = jugadoresStr.split(',').flatMap(j => j.trim().split(/\s+/)).filter(Boolean);
         } else {
-            listaJugadores = jugadoresStr.trim().split(/\\s+/);
+            listaJugadores = jugadoresStr.trim().split(/\s+/);
         }
 
        // Capitaliza y mezcla aleatoriamente
@@ -251,9 +251,9 @@ if (ganador === 'rojo') {
             }
         }
 
-        let msg = "```\\n";
-        msg += `💰 Resultados de pagos (${data.monto} soles por jugador):\\n\\n`;
-        msg += pagos.join('\\n') + "\\n";
+        let msg = "```\n";
+        msg += `💰 Resultados de pagos (${data.monto} soles por jugador):\n\n`;
+        msg += pagos.join('\n') + "\n";
         msg += "```";
 
         await interaction.reply(msg);
