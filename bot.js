@@ -20,10 +20,8 @@ const { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes } = require
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = '1399927083580264519';
 
-// Variables globales para la última ruleta
-let ultimoEquipoRojo = [];
-let ultimoEquipoAzul = [];
-let ultimoMonto = 0;
+// Guarda una ruleta distinta por cada servidor
+const ultimasRuletas = new Map();
 
 // 1️⃣ Comandos slash
 const commands = [
@@ -206,10 +204,12 @@ if (Math.random() < 0.5) {
     rojoIzquierda = false;
 }
 
-        // Guarda para pagos
-        ultimoEquipoRojo = equipoRojo;
-        ultimoEquipoAzul = equipoAzul;
-        ultimoMonto = monto;
+        // Guarda para pagos por servidor
+        ultimasRuletas.set(interaction.guildId, {
+            equipoRojo,
+            equipoAzul,
+            monto
+        });
 
         let mensaje = tablaPrideBattle(equipoRojo, equipoAzul, monto, partidas,rojoIzquierda);
     await interaction.reply(mensaje);
@@ -217,25 +217,28 @@ if (Math.random() < 0.5) {
 
     // PAGOS
     if (interaction.commandName === 'pagoswt') {
-        const ganador = interaction.options.getString('ganador');
-        if (!ultimoEquipoRojo.length || !ultimoEquipoAzul.length || !ultimoMonto) {
-            await interaction.reply('❌ Primero debes usar /ruletawt para generar los equipos.');
-            return;
-        }
-        let equipoGanador, equipoPerdedor;
-        if (ganador === 'rojo') {
-            equipoGanador = ultimoEquipoRojo;
-            equipoPerdedor = ultimoEquipoAzul;
-        } else {
-            equipoGanador = ultimoEquipoAzul;
-            equipoPerdedor = ultimoEquipoRojo;
-        }
+      const ganador = interaction.options.getString('ganador');
+      const data = ultimasRuletas.get(interaction.guildId);
+
+if (!data) {
+    await interaction.reply('❌ Primero debes usar /ruletawt para generar los equipos.');
+    return;
+}
+
+let equipoGanador, equipoPerdedor;
+if (ganador === 'rojo') {
+    equipoGanador = data.equipoRojo;
+    equipoPerdedor = data.equipoAzul;
+} else {
+    equipoGanador = data.equipoAzul;
+    equipoPerdedor = data.equipoRojo;
+}
         let ganadoresAleatorio = equipoGanador.slice().sort(() => Math.random() - 0.5);
         let pagos = [];
         let min = Math.min(equipoPerdedor.length, ganadoresAleatorio.length);
 
         for (let i = 0; i < min; i++) {
-            pagos.push(`- ${equipoPerdedor[i]} paga ${ultimoMonto} soles a ${ganadoresAleatorio[i]}`);
+            pagos.push(`- ${equipoPerdedor[i]} paga ${data.monto} soles a ${ganadoresAleatorio[i]}`);
         }
         if (equipoPerdedor.length > ganadoresAleatorio.length) {
             for (let j = ganadoresAleatorio.length; j < equipoPerdedor.length; j++) {
@@ -249,7 +252,7 @@ if (Math.random() < 0.5) {
         }
 
         let msg = "```\n";
-        msg += `💰 Resultados de pagos (${ultimoMonto} soles por jugador):\n\n`;
+        msg += `💰 Resultados de pagos (${data.monto} soles por jugador):\n\n`;
         msg += pagos.join('\n') + "\n";
         msg += "```";
 
