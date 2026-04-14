@@ -171,7 +171,7 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
 
 // 6️⃣ Listener de comandos
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
+    if (!interaction.isChatInputCommand()) return;
 
     // RULETA
     if (interaction.commandName === 'ruletawt') {
