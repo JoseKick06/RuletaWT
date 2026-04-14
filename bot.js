@@ -185,11 +185,6 @@ client.on('interactionCreate', async interaction => {
             listaJugadores = jugadoresStr.trim().split(/\\s+/);
         }
 
-      if (listaJugadores.length < 2) {
-          await interaction.reply('❌ Debes ingresar al menos 2 jugadores.');
-          return;
-      }
-
        // Capitaliza y mezcla aleatoriamente
 listaJugadores = listaJugadores.map(capitalizarNombre).sort(() => Math.random() - 0.5);
 
