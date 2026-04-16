@@ -90,9 +90,23 @@ function capitalizarNombre(nombre) {
         .join(' ');
 }
 
+function mezclarArray(array) {
+    const arr = [...array];
+
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+
+    return arr;
+}
+
 // 5️⃣ Función para tabla alineada dinámicamente
 function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = true) {
     const numIconos = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+    const separacion = "   VS   ";
+    const hueco = " ".repeat(separacion.length);
+  
     let maxJug = Math.max(equipoRojo.length, equipoAzul.length);
 
     let maxRojo = Math.max(
@@ -116,27 +130,27 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
         lines.push(
             " " +
             "EQUIPO ROJO  🔴".padEnd(maxRojo + 2) +
-            "VS".padStart(7).padEnd(7) +
-            "EQUIPO AZUL  🔵".padStart(maxAzul + 2)
+            separacion +
+            "EQUIPO AZUL  🔵".padEnd(maxAzul + 2)
         );
         lines.push(
             " " +
             "-----------".padEnd(maxRojo + 2) +
-            "".padStart(7) +
-            "-----------".padStart(maxAzul + 2)
+            hueco +
+            "-----------".padEnd(maxAzul + 2)
         );
     } else {
         lines.push(
             " " +
             "EQUIPO AZUL  🔵".padEnd(maxAzul + 2) +
-            "VS".padStart(7).padEnd(7) +
-            "EQUIPO ROJO  🔴".padStart(maxRojo + 2)
+            separacion +
+            "EQUIPO ROJO  🔴".padEnd(maxRojo + 2)
         );
         lines.push(
             " " +
             "-----------".padEnd(maxAzul + 2) +
-            "".padStart(7) +
-            "-----------".padStart(maxRojo + 2)
+            hueco +
+            "-----------".padEnd(maxRojo + 2)
         );
     }
 
@@ -147,15 +161,15 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
             lines.push(
                 " " +
                 rojo.padEnd(maxRojo + 2) +
-                "".padStart(7) +
-                azul.padStart(maxAzul + 2)
+                hueco +
+                azul.padEnd(maxAzul + 2)
             );
         } else {
             lines.push(
                 " " +
                 azul.padEnd(maxAzul + 2) +
-                "".padStart(7) +
-                rojo.padStart(maxRojo + 2)
+                hueco +
+                rojo.padEnd(maxRojo + 2)
             );
         }
     }
@@ -186,7 +200,8 @@ client.on('interactionCreate', async interaction => {
         }
 
        // Capitaliza y mezcla aleatoriamente
-listaJugadores = listaJugadores.map(capitalizarNombre).sort(() => Math.random() - 0.5);
+listaJugadores = listaJugadores.map(capitalizarNombre);
+listaJugadores = mezclarArray(listaJugadores);
 
 let mitad = Math.ceil(listaJugadores.length / 2);
 let equipoA = listaJugadores.slice(0, mitad);
@@ -233,7 +248,7 @@ if (ganador === 'rojo') {
     equipoGanador = data.equipoAzul;
     equipoPerdedor = data.equipoRojo;
 }
-        let ganadoresAleatorio = equipoGanador.slice().sort(() => Math.random() - 0.5);
+        let ganadoresAleatorio = mezclarArray(equipoGanador);
         let pagos = [];
         let min = Math.min(equipoPerdedor.length, ganadoresAleatorio.length);
 
