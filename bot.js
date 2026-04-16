@@ -110,20 +110,21 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
 
     const anchoDisponible = borde.length - 1; // por el espacio inicial " "
     const anchoColumnas = anchoDisponible - separacion.length;
-    const anchoIzquierdo = Math.floor(anchoColumnas / 2);
+    const ajusteDerecha = 2;
+    const anchoIzquierdo = Math.floor(anchoColumnas / 2) - ajusteDerecha;
     const anchoDerecho = anchoColumnas - anchoIzquierdo;
 
     const maxJug = Math.max(equipoRojo.length, equipoAzul.length);
 
     const maxRojo = Math.max(
         "EQUIPO ROJO  🔴".length,
-        "-----------".length,
+        "----------------".length,
         ...equipoRojo.map((n, i) => (`${numIconos[i]} ${n}`).length)
     );
 
     const maxAzul = Math.max(
         "EQUIPO AZUL  🔵".length,
-        "-----------".length,
+        "----------------".length,
         ...equipoAzul.map((n, i) => (`${numIconos[i]} ${n}`).length)
     );
   
@@ -144,7 +145,7 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
             " " +
             "----------------".padEnd(anchoIzquierdo) +
             hueco +
-            "-----------".padEnd(maxAzul + 2).padStart(anchoDerecho)
+            "----------------".padEnd(maxAzul + 2).padStart(anchoDerecho)
         );
     } else {
         lines.push(
@@ -157,7 +158,7 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
             " " +
             "----------------".padEnd(anchoIzquierdo) +
             hueco +
-            "-----------".padEnd(maxRojo + 2).padStart(anchoDerecho)
+            "----------------".padEnd(maxRojo + 2).padStart(anchoDerecho)
         );
     }
 
