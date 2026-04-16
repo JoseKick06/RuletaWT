@@ -104,53 +104,48 @@ function mezclarArray(array) {
 // 5️⃣ Función para tabla alineada dinámicamente
 function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = true) {
     const numIconos = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+    const borde = "─────────────────────────────────────────────";
     const separacion = "   VS   ";
     const hueco = " ".repeat(separacion.length);
-  
-    let maxJug = Math.max(equipoRojo.length, equipoAzul.length);
 
-    let maxRojo = Math.max(
-        "EQUIPO ROJO  🔴".length, 
-        "-----------".length,
-        ...equipoRojo.map((n, i) => (`${numIconos[i]} ${n}`).length)
-    );
-    let maxAzul = Math.max(
-        "EQUIPO AZUL  🔵".length,
-        "-----------".length,
-        ...equipoAzul.map((n, i) => (`${numIconos[i]} ${n}`).length)
-    );
+    const anchoDisponible = borde.length - 1; // por el espacio inicial " "
+    const anchoColumnas = anchoDisponible - separacion.length;
+    const anchoIzquierdo = Math.floor(anchoColumnas / 2);
+    const anchoDerecho = anchoColumnas - anchoIzquierdo;
+
+    const maxJug = Math.max(equipoRojo.length, equipoAzul.length);
 
     let lines = [];
-    lines.push("─────────────────────────────────────────────");
+    lines.push(borde);
     lines.push("    ⚔️  PRIDE BATTLE HK-WRCI/HS-LOBO  ⚔️    ");
-    lines.push("─────────────────────────────────────────────");
+    lines.push(borde);
 
     // 👇 Aquí usas el parámetro rojoIzquierda
     if (rojoIzquierda) {
         lines.push(
             " " +
-            "EQUIPO ROJO  🔴".padEnd(maxRojo + 2) +
+            "EQUIPO ROJO  🔴".padEnd(anchoIzquierdo) +
             separacion +
-            "EQUIPO AZUL  🔵".padEnd(maxAzul + 2)
+            "EQUIPO AZUL  🔵".padStart(anchoDerecho)
         );
         lines.push(
             " " +
-            "-----------".padEnd(maxRojo + 2) +
+            "-------------".padEnd(anchoIzquierdo) +
             hueco +
-            "-----------".padEnd(maxAzul + 2)
+            "-------------".padStart(anchoDerecho)
         );
     } else {
         lines.push(
             " " +
-            "EQUIPO AZUL  🔵".padEnd(maxAzul + 2) +
+            "EQUIPO AZUL  🔵".padEnd(anchoIzquierdo) +
             separacion +
-            "EQUIPO ROJO  🔴".padEnd(maxRojo + 2)
+            "EQUIPO ROJO  🔴".padStart(anchoDerecho)
         );
         lines.push(
             " " +
-            "-----------".padEnd(maxAzul + 2) +
+            "-------------".padEnd(anchoIzquierdo) +
             hueco +
-            "-----------".padEnd(maxRojo + 2)
+            "-------------".padStart(anchoDerecho)
         );
     }
 
@@ -160,16 +155,16 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
         if (rojoIzquierda) {
             lines.push(
                 " " +
-                rojo.padEnd(maxRojo + 2) +
+                rojo.padEnd(anchoIzquierdo) +
                 hueco +
-                azul.padEnd(maxAzul + 2)
+                azul.padStart(anchoDerecho)
             );
         } else {
             lines.push(
                 " " +
-                azul.padEnd(maxAzul + 2) +
+                azul.padEnd(anchoIzquierdo) +
                 hueco +
-                rojo.padEnd(maxRojo + 2)
+                rojo.padStart(anchoDerecho)
             );
         }
     }
