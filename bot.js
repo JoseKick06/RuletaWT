@@ -115,6 +115,18 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
 
     const maxJug = Math.max(equipoRojo.length, equipoAzul.length);
 
+    const maxRojo = Math.max(
+        "EQUIPO ROJO  🔴".length,
+        "-----------".length,
+        ...equipoRojo.map((n, i) => (`${numIconos[i]} ${n}`).length)
+    );
+
+    const maxAzul = Math.max(
+        "EQUIPO AZUL  🔵".length,
+        "-----------".length,
+        ...equipoAzul.map((n, i) => (`${numIconos[i]} ${n}`).length)
+    );
+  
     let lines = [];
     lines.push(borde);
     lines.push("    ⚔️  PRIDE BATTLE HK-WRCI/HS-LOBO  ⚔️    ");
@@ -126,26 +138,26 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
             " " +
             "EQUIPO ROJO  🔴".padEnd(anchoIzquierdo) +
             separacion +
-            "EQUIPO AZUL  🔵".padStart(anchoDerecho)
+            "EQUIPO AZUL  🔵".padEnd(maxAzul + 2).padStart(anchoDerecho)
         );
         lines.push(
             " " +
-            "-------------".padEnd(anchoIzquierdo) +
+            "----------------".padEnd(anchoIzquierdo) +
             hueco +
-            "-------------".padStart(anchoDerecho)
+            "-----------".padEnd(maxAzul + 2).padStart(anchoDerecho)
         );
     } else {
         lines.push(
             " " +
             "EQUIPO AZUL  🔵".padEnd(anchoIzquierdo) +
             separacion +
-            "EQUIPO ROJO  🔴".padStart(anchoDerecho)
+            "EQUIPO ROJO  🔴".padEnd(maxRojo + 2).padStart(anchoDerecho)
         );
         lines.push(
             " " +
-            "-------------".padEnd(anchoIzquierdo) +
+            "----------------".padEnd(anchoIzquierdo) +
             hueco +
-            "-------------".padStart(anchoDerecho)
+            "-----------".padEnd(maxRojo + 2).padStart(anchoDerecho)
         );
     }
 
@@ -157,18 +169,18 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
                 " " +
                 rojo.padEnd(anchoIzquierdo) +
                 hueco +
-                azul.padStart(anchoDerecho)
+                azul.padEnd(maxAzul + 2).padStart(anchoDerecho)
             );
         } else {
             lines.push(
                 " " +
                 azul.padEnd(anchoIzquierdo) +
                 hueco +
-                rojo.padStart(anchoDerecho)
+                rojo.padEnd(maxRojo + 2).padStart(anchoDerecho)
             );
         }
     }
-    lines.push("─────────────────────────────────────────────");
+    lines.push(borde);
     lines.push(`💰  Apuesta: ${monto} soles/jugador`);
     lines.push(`🎮  Games: ${games}`);
     lines.push("🔥 ¡LUCHAR! 🔥");
