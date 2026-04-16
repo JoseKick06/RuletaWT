@@ -110,7 +110,7 @@ function tablaPrideBattle(equipoRojo, equipoAzul, monto, games, rojoIzquierda = 
 
     const anchoDisponible = borde.length - 1; // por el espacio inicial " "
     const anchoColumnas = anchoDisponible - separacion.length;
-    const ajusteDerecha = 2;
+    const ajusteDerecha = 4;
     const anchoIzquierdo = Math.floor(anchoColumnas / 2) - ajusteDerecha;
     const anchoDerecho = anchoColumnas - anchoIzquierdo;
 
